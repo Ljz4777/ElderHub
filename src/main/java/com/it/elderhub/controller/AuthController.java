@@ -50,10 +50,10 @@ public class AuthController {
     public Result<Map<String, Object>> login(@RequestBody User user) {
         User loginUser = userService.login(user.getUsername(), user.getPassword());
 
-        Role role = roleMapper.selectById(loginUser.getRole_id());
+        Role role = roleMapper.selectById(loginUser.getRoleId());
         String roleName;
 
-        if(loginUser.getRole_id()==1){
+        if(loginUser.getRoleId()==1){
             roleName = "ADMIN";
         }else {
             roleName = "USER";

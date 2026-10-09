@@ -1,17 +1,39 @@
 package com.it.elderhub.service;
 
-import com.it.elderhub.entity.User;
+import com.it.elderhub.dto.UserAddDTO;
+import com.it.elderhub.dto.UserUpdateDTO;
+import com.it.elderhub.query.UserQuery;
+import com.it.elderhub.vo.UserVO;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.it.elderhub.entity.User;
 
-/**
-* @author Ljz
-* @description 针对表【user(系统用户表)】的数据库操作Service
-* @createDate 2026-10-08 09:52:06
-*/
 public interface UserService extends IService<User> {
 
-    User register(String username,String password);
+    /**
+     * 用户分页列表
+     */
+    IPage<UserVO> getUserPage(UserQuery query);
 
-    User login(String username,String password);
+    /**
+     * 新增用户
+     */
+    void addUser(UserAddDTO userAddDTO);
 
+    /**
+     * 修改用户
+     */
+    void updateUser(UserUpdateDTO userUpdateDTO);
+
+    /**
+     * 删除用户
+     */
+    void deleteUser(Integer id);
+
+    /**
+     * 根据id查询用户详情
+     */
+    UserVO getUserById(Integer id);
+    User login(String username, String password);
+    User register(String username, String password);
 }

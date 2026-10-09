@@ -11,7 +11,7 @@ import lombok.Data;
  * 系统用户表
  * @TableName user
  */
-@TableName(value ="user")
+@TableName(value ="t_user")
 @Data
 public class User {
     /**
@@ -54,41 +54,41 @@ public class User {
      * 联系电话
      */
     @TableField(value = "phone_number")
-    private String phone_number;
+    private String phoneNumber;
 
     /**
      * 角色ID（1:管理员 2:健康管家）
      */
     @TableField(value = "role_id")
-    private Integer role_id;
+    private Integer roleId;
 
     /**
      * 创建时间
      */
     @TableField(value = "create_time")
-    private Date create_time;
+    private Date createTime;
 
     /**
      * 创建人ID
      */
     @TableField(value = "create_by")
-    private Integer create_by;
+    private Integer createBy;
 
     /**
      * 更新时间
      */
     @TableField(value = "update_time")
-    private Date update_time;
+    private Date updateTime;
 
     /**
      * 更新人ID
      */
     @TableField(value = "update_by")
-    private Integer update_by;
+    private Integer updateBy;
 
     /**
      * 逻辑删除（0:正常 1:删除）
      */
     @TableField(value = "is_deleted")
-    private Integer is_deleted;
+    private Integer isDeleted;
 }
