@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.it.elderhub.mapper.UserMapper">
+
+    <select id="selectUserPage" resultType="com.it.elderhub.vo.UserVO">
+        SELECT id,username,nickname,sex,phone_number,email,role_id,create_time
+        FROM user
+        <where>
+            <if test="query.username != null and query.username != ''">
+                username LIKE CONCAT('%',#{query.username},'%')
+            </if>
+            <if test="query.nickname != null and query.nickname != ''">
+                nickname LIKE CONCAT('%',#{query.nickname},'%')
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+</mapper>
