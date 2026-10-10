@@ -64,7 +64,7 @@ public class Backdown {
      * 审批时间
      */
     @TableField(value = "audittime")
-    private LocalDate audittime;
+    private LocalDateTime audittime;
 
     /**
      * 备注
