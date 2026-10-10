@@ -74,7 +74,7 @@ public class BedController {
         bedService.updateBedDetailsEndDate(id, endDate);
         return Result.success();
     }
-
+  
     /**
      * 床位调换
      * POST /admin/bed/transfer
