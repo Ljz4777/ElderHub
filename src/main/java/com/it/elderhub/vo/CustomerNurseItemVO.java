@@ -31,4 +31,10 @@ public class CustomerNurseItemVO {
 
     // 状态描述文本
     private String statusMsg;
+
+    private String serialNumber;
+
+    private Integer servicePrice;
+
+    private String statusDesc;
 }

@@ -39,7 +39,7 @@ public class NurseContent {
      * 服务价格
      */
     @TableField(value = "service_price")
-    private BigDecimal service_price;
+    private Integer service_price;
 
     /**
      * 项目描述

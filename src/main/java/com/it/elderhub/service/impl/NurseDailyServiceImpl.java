@@ -22,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -187,7 +189,7 @@ public class NurseDailyServiceImpl implements NurseDailyService {
         }
 
         // 5. 创建护理记录
-        Date now = new Date();
+        LocalDateTime now = LocalDateTime.now();
 
         NurseRecord record = new NurseRecord();
 
@@ -344,7 +346,7 @@ public class NurseDailyServiceImpl implements NurseDailyService {
 
         // 到期判断
         if (vo.getMaturityTime() != null
-                && vo.getMaturityTime().before(now)) {
+                && vo.getMaturityTime().isBefore(LocalDate.now())) {
 
             vo.setStatus(2);
             vo.setStatusDesc("已到期");
