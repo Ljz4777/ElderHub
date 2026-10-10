@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import lombok.Data;
 import org.springframework.cglib.core.Local;
@@ -33,7 +34,7 @@ public class Backdown {
      * 退住时间
      */
     @TableField(value = "retreattime")
-    private Date retreattime;
+    private LocalDateTime retreattime;
 
     /**
      * 退住类型（0:正常退住 1:死亡退住 2:保留床位）

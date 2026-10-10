@@ -1,6 +1,8 @@
 package com.it.elderhub.vo;
 
 import lombok.Data;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -13,6 +15,6 @@ public class BackDownVO {
     private String retreatReason;
     private Integer auditStatus;     // 0:待审核, 1:同意, 2:拒绝
     private String auditPerson;      // 审批人姓名
-    private LocalDateTime auditTime;
+    private LocalDate auditTime;
     private String remarks;
 }
