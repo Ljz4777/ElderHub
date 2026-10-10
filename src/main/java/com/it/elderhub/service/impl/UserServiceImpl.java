@@ -61,6 +61,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
+        // 补齐 NOT NULL 字段默认值（user 表 nickname/sex/phone_number/role_id/create_by 均为 NOT NULL）
+        user.setNickname(username);
+        user.setSex(0);
+        user.setPhone_number("");
+        user.setRole_id(2); // 默认注册为健康管家
+        user.setCreate_by(0);
 
         userMapper.insert(user);
 

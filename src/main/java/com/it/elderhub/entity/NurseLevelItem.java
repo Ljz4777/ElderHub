@@ -11,7 +11,7 @@ import lombok.Data;
  * @TableName nurselevelitem
  */
 @Data
-@TableName(value = "nurselevelitem")
+@TableName(value = "nurse_level_item")
 public class NurseLevelItem {
 
     /**
