@@ -1,10 +1,12 @@
 package com.it.elderhub.vo;
 
 import lombok.Data;
-import java.time.LocalDate;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
- * 客户护理项目 VO
+ * 客户护理项目VO（含项目信息和状态）
  */
 @Data
 public class CustomerNurseItemVO {
