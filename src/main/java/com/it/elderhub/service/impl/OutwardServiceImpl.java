@@ -35,9 +35,9 @@ public class OutwardServiceImpl extends ServiceImpl<OutwardMapper, Outward> impl
     @Autowired
     private BedMapper bedMapper;
 
-    // 定义常量，匹配床位状态枚举 (根据你的实际 Bed 类枚举来定义，这里假设 1:占用, 2:外出)
-    private static final int BED_STATUS_AWAY = 2;
-    private static final int BED_STATUS_OCCUPIED = 1;
+    // 床位状态（1:空闲 2:有人 3:外出）
+    private static final int BED_STATUS_AWAY = 3;
+    private static final int BED_STATUS_OCCUPIED = 2;
 
     /**
      * 管理员：分页查询外出列表 (支持客户姓名模糊搜索)

@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,7 +39,7 @@ public class BackdownServiceImpl extends ServiceImpl<BackdownMapper, Backdown>
 
     private static final int NORMAL = 0;
     private static final int DEATH = 1;
-    private static final int FREE = 0;
+    private static final int FREE = 1;
 
     @Autowired
     private BedMapper bedMapper;
@@ -95,7 +97,9 @@ public class BackdownServiceImpl extends ServiceImpl<BackdownMapper, Backdown>
     public void saveBackDown(BackDownAddDTO dto) {
         Backdown backdown = new Backdown();
         backdown.setCustomer_id(dto.getCustomerId());
-        backdown.setRetreattime(dto.getRetreatTime());
+        if (dto.getRetreatTime() != null) {
+            backdown.setRetreattime(Date.from(dto.getRetreatTime().atZone(ZoneId.systemDefault()).toInstant()));
+        }
         backdown.setRetreattype(dto.getRetreatType());
         backdown.setRetreatreason(dto.getRetreatReason());
         backdown.setRemarks(dto.getRemarks());
@@ -121,12 +125,13 @@ public class BackdownServiceImpl extends ServiceImpl<BackdownMapper, Backdown>
             BackDownVO vo = new BackDownVO();
             vo.setId(item.getId());
             vo.setCustomerId(item.getCustomer_id());
-            vo.setRetreatTime(item.getRetreattime());
+            vo.setRetreatTime(item.getRetreattime() == null ? null
+                    : LocalDateTime.ofInstant(item.getRetreattime().toInstant(), ZoneId.systemDefault()));
             vo.setRetreatType(item.getRetreattype());
             vo.setRetreatReason(item.getRetreatreason());
             vo.setAuditStatus(item.getAuditstatus());
             vo.setAuditPerson(item.getAuditperson());
-            vo.setAuditTime(item.getAudittime());
+            vo.setAuditTime(item.getAudittime() == null ? null : item.getAudittime().atStartOfDay());
             vo.setRemarks(item.getRemarks());
             return vo;
         }).collect(Collectors.toList());
