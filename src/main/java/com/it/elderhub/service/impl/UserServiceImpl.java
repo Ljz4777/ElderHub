@@ -51,7 +51,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getUsername,username);
+        wrapper.eq(User::getUsername, username);
         User exist = userMapper.selectOne(wrapper);
 
         if (exist != null) {

@@ -53,26 +53,4 @@ public class NurseDailyController {
         return Result.success(nurseDailyService.listCustomerItems(customerId, userId));
     }
 
-    /**
-     * 录入护理记录（同时扣减客户项目次数）
-     * @param dto 护理记录信息
-     * @param userId 当前登录管家ID
-     */
-    @PostMapping("/nurse-record/save")
-    public Result<Void> saveNurseRecord(@RequestBody NurseRecordAddDTO dto, @RequestParam Integer userId) {
-        nurseDailyService.saveNurseRecord(dto, userId);
-        return Result.success();
-    }
-
-    /**
-     * 查询客户的护理记录
-     * @param customerId 客户ID
-     * @param userId 当前登录管家ID
-     */
-    @GetMapping("/nurse-record/list/{customerId}")
-    public Result<List<NurseRecordVO>> listNurseRecords(
-            @PathVariable Integer customerId,
-            @RequestParam Integer userId) {
-        return Result.success(nurseDailyService.listNurseRecords(customerId, userId));
-    }
 }
