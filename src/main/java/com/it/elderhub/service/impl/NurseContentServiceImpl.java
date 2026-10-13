@@ -12,8 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-
 /**
  * 护理项目Service实现类
  */
@@ -40,8 +38,8 @@ public class NurseContentServiceImpl implements NurseContentService {
         if (nursingName != null && !nursingName.isEmpty()) {
             wrapper.like(NurseContent::getNursing_name, nursingName);
         }
-        // 按创建时间倒序
-        wrapper.orderByDesc(NurseContent::getCreate_time);
+        // 按ID倒序（表无 create_time 列）
+        wrapper.orderByDesc(NurseContent::getId);
 
         // 执行分页查询
         Page<NurseContent> page = new Page<>(pageNum, pageSize);
@@ -55,8 +53,6 @@ public class NurseContentServiceImpl implements NurseContentService {
             content.setStatus(1); // 默认启用
         }
         content.setIs_deleted(0);
-        content.setCreate_time(new Date());
-        content.setUpdate_time(new Date());
         nurseContentMapper.insert(content);
     }
 
@@ -66,7 +62,6 @@ public class NurseContentServiceImpl implements NurseContentService {
         if (content.getId() == null) {
             throw new RuntimeException("项目ID不能为空");
         }
-        content.setUpdate_time(new Date());
         nurseContentMapper.updateById(content);
 
         // 如果状态改为停用，自动从护理级别项目关联表中移除该项目
@@ -89,7 +84,6 @@ public class NurseContentServiceImpl implements NurseContentService {
         NurseContent content = new NurseContent();
         content.setId(id);
         content.setIs_deleted(1);
-        content.setUpdate_time(new Date());
         nurseContentMapper.updateById(content);
     }
 }

@@ -8,8 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+/**
+ * 管家：录入护理记录
+ * POST /nurse/nurse-record-mine/save
+ */
 @RestController
-@RequestMapping("/nurse/nurse-record")
+@RequestMapping("/nurse/nurse-record-mine")
 public class NurseRecordButlerController {
 
     @Autowired

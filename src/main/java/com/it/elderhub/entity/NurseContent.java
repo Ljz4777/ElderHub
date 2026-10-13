@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * 护理项目表
@@ -70,16 +69,4 @@ public class NurseContent {
      */
     @TableField(value = "is_deleted")
     private Integer is_deleted;
-
-    /**
-     * 创建时间
-     */
-    @TableField(value = "create_time")
-    private Date create_time;
-
-    /**
-     * 更新时间
-     */
-    @TableField(value = "update_time")
-    private Date update_time;
 }

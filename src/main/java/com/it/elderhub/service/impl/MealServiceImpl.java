@@ -1,22 +1,68 @@
 package com.it.elderhub.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.it.elderhub.entity.Meal;
-import com.it.elderhub.service.MealService;
 import com.it.elderhub.mapper.MealMapper;
+import com.it.elderhub.service.MealService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
-* @author Ljz
-* @description 针对表【meal(膳食日历表)】的数据库操作Service实现
-* @createDate 2026-10-08 09:52:06
-*/
+ * 膳食日历Service实现类
+ */
 @Service
-public class MealServiceImpl extends ServiceImpl<MealMapper, Meal>
-    implements MealService{
+public class MealServiceImpl implements MealService {
 
+    @Autowired
+    private MealMapper mealMapper;
+
+    @Override
+    public IPage<Meal> listMeals(Integer pageNum, Integer pageSize, String weekDay, Integer mealType) {
+        LambdaQueryWrapper<Meal> wrapper = new LambdaQueryWrapper<>();
+        // 只查未删除的
+        wrapper.eq(Meal::getIs_deleted, 0);
+        // 按星期筛选
+        if (weekDay != null && !weekDay.isEmpty()) {
+            wrapper.eq(Meal::getWeek_day, weekDay);
+        }
+        // 按餐次筛选
+        if (mealType != null) {
+            wrapper.eq(Meal::getMeal_type, mealType);
+        }
+        // 按星期、餐次排序
+        wrapper.orderByAsc(Meal::getWeek_day).orderByAsc(Meal::getMeal_type);
+
+        Page<Meal> page = new Page<>(pageNum, pageSize);
+        return mealMapper.selectPage(page, wrapper);
+    }
+
+    @Override
+    public Meal getMealById(Integer id) {
+        return mealMapper.selectById(id);
+    }
+
+    @Override
+    public void saveMeal(Meal meal) {
+        meal.setIs_deleted(0);
+        mealMapper.insert(meal);
+    }
+
+    @Override
+    public void updateMeal(Meal meal) {
+        if (meal.getId() == null) {
+            throw new RuntimeException("菜单ID不能为空");
+        }
+        mealMapper.updateById(meal);
+    }
+
+    @Override
+    public void removeMeal(Integer id) {
+        // 逻辑删除
+        Meal meal = new Meal();
+        meal.setId(id);
+        meal.setIs_deleted(1);
+        mealMapper.updateById(meal);
+    }
 }
-
-
-
-

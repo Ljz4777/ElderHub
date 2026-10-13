@@ -77,7 +77,7 @@ public class BackdownServiceImpl extends ServiceImpl<BackdownMapper, Backdown>
         //更新审核信息
         backdown.setAuditstatus(auditStatus);
         backdown.setAuditperson(auditPerson);
-        backdown.setAudittime(LocalDateTime.now());
+        backdown.setAudittime(LocalDate.from(LocalDateTime.now()));
         this.updateById(backdown);
         //审核通过而且为正常/死亡退住 释放床位
         if(auditStatus ==1&& (backdown.getRetreattype()==NORMAL||backdown.getRetreattype()==DEATH)){
@@ -125,12 +125,12 @@ public class BackdownServiceImpl extends ServiceImpl<BackdownMapper, Backdown>
             BackDownVO vo = new BackDownVO();
             vo.setId(item.getId());
             vo.setCustomerId(item.getCustomer_id());
-            vo.setRetreatTime(item.getRetreattime() == null ? null : item.getRetreattime());
+            vo.setRetreatTime(item.getRetreattime());
             vo.setRetreatType(item.getRetreattype());
             vo.setRetreatReason(item.getRetreatreason());
             vo.setAuditStatus(item.getAuditstatus());
             vo.setAuditPerson(item.getAuditperson());
-            vo.setAuditTime(item.getAudittime() == null ? null : LocalDate.from(item.getAudittime()));
+            vo.setAuditTime(item.getAudittime());
             vo.setRemarks(item.getRemarks());
             return vo;
         }).collect(Collectors.toList());

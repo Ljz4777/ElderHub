@@ -68,8 +68,8 @@ public class NurseDailyServiceImpl implements NurseDailyService {
             wrapper.like("customer_name", customerName);
         }
 
-        // 按创建时间倒序
-        wrapper.orderByDesc("create_time");
+        // 按ID倒序（customer 表无 create_time 列）
+        wrapper.orderByDesc("id");
 
         Page<Customer> page = new Page<>(pageNum, pageSize);
         return customerMapper.selectPage(page, wrapper);
@@ -91,7 +91,8 @@ public class NurseDailyServiceImpl implements NurseDailyService {
 
         wrapper.eq("customer_id", customerId);
         wrapper.eq("is_deleted", 0);
-        wrapper.orderByDesc("create_time");
+        // 按ID倒序（customer_nurse_item 表无 create_time 列）
+        wrapper.orderByDesc("id");
 
         List<CustomerNurseItem> items =
                 customerNurseItemMapper.selectList(wrapper);
@@ -210,18 +211,6 @@ public class NurseDailyServiceImpl implements NurseDailyService {
         // 先插入护理记录
         nurseRecordMapper.insert(record);
 
-        // NurseRecord实体中没有create_time和update_time属性，
-        // 因此通过数据库字段名更新这两个字段。
-        // 此处假设插入时数据库允许这两个字段使用默认值或暂时为空。
-        UpdateWrapper<NurseRecord> recordWrapper =
-                new UpdateWrapper<>();
-
-        recordWrapper.eq("id", record.getId());
-        recordWrapper.set("create_time", now);
-        recordWrapper.set("update_time", now);
-
-        nurseRecordMapper.update(null, recordWrapper);
-
         // 6. 扣减客户护理项目剩余次数
         UpdateWrapper<CustomerNurseItem> updateWrapper =
                 new UpdateWrapper<>();
@@ -233,8 +222,6 @@ public class NurseDailyServiceImpl implements NurseDailyService {
                 customerItem.getNurse_number()
                         - dto.getNursingCount()
         );
-
-        updateWrapper.set("update_time", new Date());
 
         customerNurseItemMapper.update(null, updateWrapper);
     }

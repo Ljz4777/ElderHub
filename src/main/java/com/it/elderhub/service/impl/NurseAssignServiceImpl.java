@@ -30,7 +30,8 @@ public class NurseAssignServiceImpl implements NurseAssignService {
 
         wrapper.eq("user_id", nurseId);
         wrapper.eq("is_deleted", 0);
-        wrapper.orderByDesc("create_time");
+        // 按ID倒序（customer 表无 create_time 列）
+        wrapper.orderByDesc("id");
 
         return customerMapper.selectList(wrapper);
     }

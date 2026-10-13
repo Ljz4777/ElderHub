@@ -43,8 +43,8 @@ public class NurseLevelServiceImpl implements NurseLevelService {
         if (levelStatus != null) {
             wrapper.eq(NurseLevel::getLevel_status, levelStatus);
         }
-        // 按创建时间倒序
-        wrapper.orderByDesc(NurseLevel::getCreate_time);
+        // 按ID倒序（表无 create_time 列）
+        wrapper.orderByDesc(NurseLevel::getId);
 
         // 执行分页查询
         Page<NurseLevel> page = new Page<>(pageNum, pageSize);
@@ -58,8 +58,6 @@ public class NurseLevelServiceImpl implements NurseLevelService {
             level.setLevel_status(1); // 默认启用
         }
         level.setIs_deleted(0);
-        level.setCreate_time(new Date());
-        level.setUpdate_time(new Date());
         nurseLevelMapper.insert(level);
     }
 
@@ -68,7 +66,6 @@ public class NurseLevelServiceImpl implements NurseLevelService {
         NurseLevel level = new NurseLevel();
         level.setId(id);
         level.setLevel_status(levelStatus);
-        level.setUpdate_time(new Date());
         nurseLevelMapper.updateById(level);
     }
 
@@ -92,7 +89,7 @@ public class NurseLevelServiceImpl implements NurseLevelService {
         LambdaQueryWrapper<NurseContent> contentWrapper = new LambdaQueryWrapper<>();
         contentWrapper.in(NurseContent::getId, itemIds);
         contentWrapper.eq(NurseContent::getIs_deleted, 0);
-        contentWrapper.orderByDesc(NurseContent::getCreate_time);
+        contentWrapper.orderByDesc(NurseContent::getId);
 
         return nurseContentMapper.selectList(contentWrapper);
     }
