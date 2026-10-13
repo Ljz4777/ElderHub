@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@MapperScan("com.it.elderhub.mapper")
 public class MybatisPlusConfig {
     @Bean
     public MybatisPlusInterceptor   mybatisPlusInterceptor() {

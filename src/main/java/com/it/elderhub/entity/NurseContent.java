@@ -11,10 +11,10 @@ import java.util.Date;
 
 /**
  * 护理项目表
- * @TableName nursecontent
+ * @TableName nurse_content
  */
 @Data
-@TableName(value = "nursecontent")
+@TableName(value = "nurse_content")
 public class NurseContent {
 
     /**

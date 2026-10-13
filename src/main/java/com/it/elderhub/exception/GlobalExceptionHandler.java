@@ -1,9 +1,11 @@
 package com.it.elderhub.exception;
 
 import com.it.elderhub.common.Result;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -14,7 +16,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public Result<?> handleException(Exception e) {
-        // 这里不要直接返回 e.getMessage()，避免泄露敏感信息
+        // 打印完整堆栈到日志，便于排查；对外仍返回通用消息
+        log.error("Unhandled exception", e);
         return Result.error("Internal server error");
     }
 }

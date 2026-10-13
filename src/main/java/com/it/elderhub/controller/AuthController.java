@@ -1,5 +1,7 @@
 package com.it.elderhub.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.it.elderhub.annotation.RequireLogin;
 import com.it.elderhub.common.Result;
 import com.it.elderhub.entity.Role;
@@ -29,6 +31,9 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class AuthController {
 
+    private static final Logger log =
+            LoggerFactory.getLogger(AuthController.class);
+
     @Autowired
     private UserService userService;
     @Autowired
@@ -36,15 +41,27 @@ public class AuthController {
     @Autowired
     private RoleMapper roleMapper;
 
+
     @PostMapping("/register")
     public Result<Map<String, Object>> register(@RequestBody User user) {
-        User registered = userService.register(user.getUsername(), user.getPassword());
+        try {
+            User registered = userService.register(
+                    user.getUsername(),
+                    user.getPassword()
+            );
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("id", registered.getId());
-        data.put("username", registered.getUsername());
-        return Result.success(data);
+            Map<String, Object> data = new HashMap<>();
+            data.put("id", registered.getId());
+            data.put("username", registered.getUsername());
+
+            return Result.success(data);
+
+        } catch (Exception e) {
+            log.error("用户注册失败，username={}", user.getUsername(), e);
+            throw e;
+        }
     }
+
 
     @PostMapping("/login")
     public Result<Map<String, Object>> login(@RequestBody User user) {

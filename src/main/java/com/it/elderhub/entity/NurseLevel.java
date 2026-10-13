@@ -10,10 +10,10 @@ import java.util.Date;
 
 /**
  * 护理级别表
- * @TableName nurselevel
+ * @TableName nurse_level
  */
 @Data
-@TableName(value = "nurselevel")
+@TableName(value = "nurse_level")
 public class NurseLevel {
 
     /**
