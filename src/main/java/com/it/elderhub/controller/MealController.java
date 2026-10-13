@@ -23,14 +23,26 @@ public class MealController {
      * @param pageSize 每页条数（默认10）
      * @param weekDay 星期几筛选（可空）
      * @param mealType 餐次类型筛选（1:早餐 2:午餐 3:晚餐，可空）
+     * @param status 状态筛选（1:启用 2:停用，可空，默认启用）
      */
     @GetMapping("/list")
     public Result<IPage<Meal>> list(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
             String weekDay,
-            Integer mealType) {
-        return Result.success(mealService.listMeals(pageNum, pageSize, weekDay, mealType));
+            Integer mealType,
+            Integer status) {
+        return Result.success(mealService.listMeals(pageNum, pageSize, weekDay, mealType, status));
+    }
+
+    /**
+     * 修改膳食状态（启用/停用）
+     * PUT /admin/meal/update-status?id=1&status=2
+     */
+    @PutMapping("/update-status")
+    public Result<Void> updateStatus(@RequestParam Integer id, @RequestParam Integer status) {
+        mealService.updateMealStatus(id, status);
+        return Result.success();
     }
 
     /**

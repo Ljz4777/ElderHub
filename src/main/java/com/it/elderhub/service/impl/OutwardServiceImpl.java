@@ -126,7 +126,7 @@ public class OutwardServiceImpl extends ServiceImpl<OutwardMapper, Outward> impl
         // 1. 记录实际回院时间 (使用服务器当前时间更为准确)
         Outward record = this.getById(id);
         if (record == null) {
-            throw new RuntimeException("外出记录不存在");
+            throw new IllegalArgumentException("外出记录不存在");
         }
 
         record.setActualreturntime(LocalDateTime.now());
@@ -150,9 +150,13 @@ public class OutwardServiceImpl extends ServiceImpl<OutwardMapper, Outward> impl
     private PageResult<OutwardVO> convertToPageResult(IPage<Outward> doPage) {
         List<OutwardVO> list = doPage.getRecords().stream().map(d -> {
             OutwardVO vo = new OutwardVO();
-            vo.setCustomerId(d.getId());
+            vo.setId(d.getId());
             vo.setCustomerId(d.getCustomer_id());
-            // 注意：如果前端需要展示客户姓名，这里建议通过联表查询或者单独查询赋值给 vo.setCustomerName(...)
+            // 补充客户姓名，便于前端展示
+            Customer customer = customerMapper.selectById(d.getCustomer_id());
+            if (customer != null) {
+                vo.setCustomerName(customer.getCustomer_name());
+            }
 
             vo.setOutgoingReason(d.getOutgoingreason());
             vo.setOutgoingTime(d.getOutgoingtime());

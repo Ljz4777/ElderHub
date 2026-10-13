@@ -44,6 +44,12 @@ public class Meal {
     private String taste;
 
     /**
+     * 状态（1:启用 2:停用）
+     */
+    @TableField(value = "status")
+    private Integer status;
+
+    /**
      * 逻辑删除（0:正常 1:删除）
      */
     @TableField(value = "is_deleted")

@@ -33,37 +33,37 @@ public class Backdown {
     /**
      * 退住时间
      */
-    @TableField(value = "retreattime")
+    @TableField(value = "retreat_time")
     private LocalDateTime retreattime;
 
     /**
      * 退住类型（0:正常退住 1:死亡退住 2:保留床位）
      */
-    @TableField(value = "retreattype")
+    @TableField(value = "retreat_type")
     private Integer retreattype;
 
     /**
      * 退住原因
      */
-    @TableField(value = "retreatreason")
+    @TableField(value = "retreat_reason")
     private String retreatreason;
 
     /**
      * 审批状态（0:已提交 1:同意 2:拒绝）
      */
-    @TableField(value = "auditstatus")
+    @TableField(value = "audit_status")
     private Integer auditstatus;
 
     /**
      * 审批人姓名
      */
-    @TableField(value = "auditperson")
+    @TableField(value = "audit_person")
     private String auditperson;
 
     /**
      * 审批时间
      */
-    @TableField(value = "audittime")
+    @TableField(value = "audit_time")
     private LocalDateTime audittime;
 
     /**

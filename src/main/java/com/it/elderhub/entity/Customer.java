@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -69,12 +70,14 @@ public class Customer {
      * 入住日期
      */
     @TableField(value = "checkin_date")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date checkin_date;
 
     /**
      * 合同到期日期
      */
     @TableField(value = "expiration_date")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date expiration_date;
 
     /**
@@ -118,6 +121,12 @@ public class Customer {
      */
     @TableField(value = "attention")
     private String attention;
+
+    /**
+     * 家属
+     */
+    @TableField(value = "family_member")
+    private String family_member;
 
     /**
      * 头像文件路径

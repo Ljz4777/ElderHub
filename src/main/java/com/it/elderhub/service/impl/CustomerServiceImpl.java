@@ -49,8 +49,11 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer>
         if(customer.getExpiration_date().before(customer.getCheckin_date())){
             throw new RuntimeException();
         }
-        //2.计算年龄
-        int age = Period.between(customer.getBirthday(), LocalDate.now()).getYears();
+        //2.根据出生日期自动计算年龄
+        if (customer.getBirthday() != null) {
+            int age = Period.between(customer.getBirthday(), LocalDate.now()).getYears();
+            customer.setCustomer_age(age);
+        }
         //3.校验床位状态
         Bed selectedBed = bedMapper.selectById(customer.getBed_id());
         if(selectedBed == null||selectedBed.getBed_status()!=FREE){
@@ -88,7 +91,12 @@ public class CustomerServiceImpl extends ServiceImpl<CustomerMapper, Customer>
                 throw new RuntimeException("到期日期不能早于入住日期");
             }
         }
-        //3.判断到期日期是否变更了
+        //3.出生日期变更时重算年龄
+        if (customer.getBirthday() != null) {
+            int age = Period.between(customer.getBirthday(), LocalDate.now()).getYears();
+            customer.setCustomer_age(age);
+        }
+        //4.判断到期日期是否变更了
         boolean datechange = !oldcustomer.getExpiration_date().equals(customer.getExpiration_date());
         if(datechange && oldcustomer.getCheckin_date()!=null){
             BedDetails details = bedDetailsMapper.selectOne(//去数据库的bed_details表里查 只找一条记录

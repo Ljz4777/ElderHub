@@ -51,7 +51,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getUsername,username);
+        wrapper.eq(User::getUsername, username);
+        wrapper.eq(User::getIs_deleted, 0); // 只校验未删除用户，已注销用户名可重新注册
         User exist = userMapper.selectOne(wrapper);
 
         if (exist != null) {
@@ -78,6 +79,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 1. 根据用户名去数据库查询用户
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getUsername, username);//直接引用实体类属性
+        wrapper.eq(User::getIs_deleted, 0); // 已删除用户不允许登录
         User user = userMapper.selectOne(wrapper);
 
         if (user == null) {
@@ -132,9 +134,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public void saveUser(UserAddDTO dto) {
         User user = new User();
         BeanUtils.copyProperties(dto, user);
+        // DTO 为驼峰、实体为下划线，BeanUtils 无法拷贝这两字段，需手动映射
+        user.setPhone_number(dto.getPhoneNumber());
+        user.setRole_id(dto.getRoleId());
         user.setIs_deleted(0);
         user.setCreate_time(LocalDateTime.now());
-        // TODO: 后续需要加上密码加密逻辑，这里先直接存明文或简单加密
+        // 密码为空时默认设置为手机号码后6位（手机号不足6位时兜底123456）
+        String password = dto.getPassword();
+        if (password == null || password.isBlank()) {
+            String phone = dto.getPhoneNumber();
+            password = (phone != null && phone.length() >= 6)
+                    ? phone.substring(phone.length() - 6)
+                    : "123456";
+        }
+        user.setPassword(passwordEncoder.encode(password));
         this.save(user);
     }
 
@@ -146,6 +159,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public void updateUser(UserUpdateDTO dto) {
         User user = new User();
         BeanUtils.copyProperties(dto, user);
+        // DTO 为驼峰、实体为下划线，需手动映射
+        user.setPhone_number(dto.getPhoneNumber());
+        user.setRole_id(dto.getRoleId());
         user.setUpdate_time(LocalDateTime.now());
         this.updateById(user);
     }
@@ -159,6 +175,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = this.getById(id);
         if (user != null) {
             user.setIs_deleted(1);
+            // username 有唯一索引，删除时改名释放，允许同名账号重新注册
+            user.setUsername(user.getUsername() + "#del#" + id);
             user.setUpdate_time(LocalDateTime.now());
             this.updateById(user);
         }

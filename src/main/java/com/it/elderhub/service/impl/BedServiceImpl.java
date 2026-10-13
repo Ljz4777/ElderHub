@@ -141,6 +141,12 @@ public class BedServiceImpl extends ServiceImpl<BedMapper, Bed>
         if (query.getStartDate() != null) {
             wrapper.eq("start_date", query.getStartDate());
         }
+        // 老人类型筛选：护理老人=已配置护理项目，自理老人=未配置（默认查自理）
+        if (query.getCustomerType() != null && query.getCustomerType() == 2) {
+            wrapper.apply("customer_id IN (SELECT customer_id FROM customer_nurse_item WHERE is_deleted = 0)");
+        } else if (query.getCustomerType() != null && query.getCustomerType() == 1) {
+            wrapper.apply("customer_id NOT IN (SELECT customer_id FROM customer_nurse_item WHERE is_deleted = 0)");
+        }
         if (query.getStatus() != null && query.getStatus() == 1) {
             // 正在使用：未删除 且（endDate 为空 或 endDate > 当前日期）
             wrapper.eq("is_deleted", 0)

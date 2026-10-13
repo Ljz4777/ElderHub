@@ -31,25 +31,25 @@ public class Outward {
     /**
      * 外出事由
      */
-    @TableField(value = "outgoingreason")
+    @TableField(value = "outgoing_reason")
     private String outgoingreason;
 
     /**
      * 外出时间
      */
-    @TableField(value = "outgoingtime")
+    @TableField(value = "outgoing_time")
     private LocalDateTime outgoingtime;
 
     /**
      * 预计回院时间
      */
-    @TableField(value = "expectedreturntime")
+    @TableField(value = "expected_return_time")
     private LocalDateTime expectedreturntime;
 
     /**
      * 实际回院时间
      */
-    @TableField(value = "actualreturntime")
+    @TableField(value = "actual_return_time")
     private LocalDateTime actualreturntime;
 
     /**
@@ -67,25 +67,25 @@ public class Outward {
     /**
      * 陪同人联系电话
      */
-    @TableField(value = "escortedtel")
+    @TableField(value = "escorted_tel")
     private String escortedtel;
 
     /**
      * 审批状态（0:已提交 1:同意 2:拒绝）
      */
-    @TableField(value = "auditstatus")
+    @TableField(value = "audit_status")
     private Integer auditstatus;
 
     /**
      * 审批人姓名
      */
-    @TableField(value = "auditperson")
+    @TableField(value = "audit_person")
     private String auditperson;
 
     /**
      * 审批时间
      */
-    @TableField(value = "audittime")
+    @TableField(value = "audit_time")
     private LocalDateTime audittime;
 
     /**

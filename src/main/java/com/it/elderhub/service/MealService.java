@@ -14,9 +14,10 @@ public interface MealService {
      * @param pageSize 每页条数（默认10）
      * @param weekDay 星期几筛选（可空）
      * @param mealType 餐次类型筛选（1:早餐 2:午餐 3:晚餐，可空）
+     * @param status 状态筛选（1:启用 2:停用，可空，默认启用）
      * @return 分页结果
      */
-    IPage<Meal> listMeals(Integer pageNum, Integer pageSize, String weekDay, Integer mealType);
+    IPage<Meal> listMeals(Integer pageNum, Integer pageSize, String weekDay, Integer mealType, Integer status);
 
     /**
      * 查询膳食详情
@@ -42,4 +43,11 @@ public interface MealService {
      * @param id 菜单ID
      */
     void removeMeal(Integer id);
+
+    /**
+     * 修改膳食状态（启用/停用）
+     * @param id 菜单ID
+     * @param status 1:启用 2:停用
+     */
+    void updateMealStatus(Integer id, Integer status);
 }

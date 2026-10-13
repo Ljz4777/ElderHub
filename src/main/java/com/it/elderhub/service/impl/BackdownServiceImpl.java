@@ -72,12 +72,12 @@ public class BackdownServiceImpl extends ServiceImpl<BackdownMapper, Backdown>
     public void auditBackDown(Integer id, Integer auditStatus, String auditPerson) {
         Backdown backdown = this.getById(id);
         if(backdown==null||backdown.getAuditstatus()!=0){
-            throw new RuntimeException("退住单不存在或已审核");
+            throw new IllegalArgumentException("退住单不存在或已审核");
         }
         //更新审核信息
         backdown.setAuditstatus(auditStatus);
         backdown.setAuditperson(auditPerson);
-        backdown.setAudittime(LocalDate.from(LocalDateTime.now()));
+        backdown.setAudittime(LocalDateTime.now());
         this.updateById(backdown);
         //审核通过而且为正常/死亡退住 释放床位
         if(auditStatus ==1&& (backdown.getRetreattype()==NORMAL||backdown.getRetreattype()==DEATH)){

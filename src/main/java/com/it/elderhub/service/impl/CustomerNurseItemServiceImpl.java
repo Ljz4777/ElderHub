@@ -197,11 +197,12 @@ public class CustomerNurseItemServiceImpl extends ServiceImpl<CustomerNurseItemM
         item.setCustomer_id(dto.getCustomerId());
         item.setItem_id(dto.getItemId());
         item.setLevel_id(null); // 单独购买的不绑定等级ID
-        item.setNurse_number(dto.getAddCount());
+        // 购买数量默认1
+        item.setNurse_number(dto.getAddCount() != null ? dto.getAddCount() : 1);
         item.setBuy_time(LocalDate.now());
 
-        // 如果前端传了时间就用前端的，否则默认1个月
-        item.setMaturity_time(dto.getMaturityTime() != null ? dto.getMaturityTime() : LocalDate.now().plusMonths(1));
+        // 如果前端传了时间就用前端的，否则默认当前日期
+        item.setMaturity_time(dto.getMaturityTime() != null ? dto.getMaturityTime() : LocalDate.now());
 
         this.save(item);
     }
