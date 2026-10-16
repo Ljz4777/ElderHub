@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * 护理级别表
  * @TableName nurse_level
@@ -37,4 +39,10 @@ public class NurseLevel {
      */
     @TableField(value = "is_deleted")
     private Integer is_deleted;
+
+    /**
+     * 创建时间
+     */
+    @TableField(value = "create_time")
+    private Date create_time;
 }

@@ -53,7 +53,20 @@ public class NurseLevelServiceImpl implements NurseLevelService {
 
     @Override
     public void saveLevel(NurseLevel level) {
-        // 设置默认值
+        // 1.名称唯一性校验：level_name 有唯一键，重名（含已删除级别占用的名称）会直接抛 SQL 异常，
+        //   这里提前校验并给出友好提示
+        String name = level.getLevel_name() == null ? "" : level.getLevel_name().trim();
+        if (name.isEmpty()) {
+            throw new RuntimeException("请输入级别名称");
+        }
+        Long count = nurseLevelMapper.selectCount(
+                new LambdaQueryWrapper<NurseLevel>().eq(NurseLevel::getLevel_name, name));
+        if (count != null && count > 0) {
+            throw new RuntimeException("该护理级别名称已存在，请勿重复添加");
+        }
+
+        // 2.设置默认值
+        level.setLevel_name(name);
         if (level.getLevel_status() == null) {
             level.setLevel_status(1); // 默认启用
         }

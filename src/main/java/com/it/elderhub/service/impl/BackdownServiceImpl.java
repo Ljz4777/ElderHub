@@ -67,6 +67,9 @@ public class BackdownServiceImpl extends ServiceImpl<BackdownMapper, Backdown>
                     "customer_id in (select id from customer where customer_name like {0})","%"+query.getCustomerName()+"%"
             );
         }
+        if(query.getCustomerId()!=null){
+            wrapper.eq(Backdown::getCustomer_id, query.getCustomerId());
+        }
         wrapper.orderByDesc(Backdown::getRetreattime);
         IPage<Backdown> doPage = this.page(page,wrapper);
         return convertToPageResult(doPage);
@@ -90,16 +93,7 @@ public class BackdownServiceImpl extends ServiceImpl<BackdownMapper, Backdown>
         if(auditStatus ==1&& (backdown.getRetreattype()==NORMAL||backdown.getRetreattype()==DEATH)){
             Customer customer = customerMapper.selectById(backdown.getCustomer_id());
             if(customer!=null){
-                //1.释放床位
-                if(customer.getBed_id()!=null){
-                    Bed bed = bedMapper.selectById(customer.getBed_id());
-                    if(bed!=null){
-                        bed.setBed_status(FREE);
-                        bedMapper.updateById(bed);
-                        log.info("退住审核通过，释放床位[{}]",bed.getId());
-                    }
-                }
-                //2.关闭当前生效的入住记录（逻辑删除，保留使用历史）
+                //1.关闭当前生效的入住记录（逻辑删除，保留使用历史）
                 BedDetails activeDetails = bedDetailsMapper.selectOne(
                         new QueryWrapper<BedDetails>()
                                 .eq("customer_id", customer.getId())
@@ -112,11 +106,28 @@ public class BackdownServiceImpl extends ServiceImpl<BackdownMapper, Backdown>
                     activeDetails.setIs_deleted(1);
                     bedDetailsMapper.updateById(activeDetails);
                 }
+                //2.释放床位：以生效入住记录上的床位为准，客户档案床位一并兜底
+                //（两者可能因调床/历史数据不同步，漏放任一个都会产生"已入住但无在住客户"的孤儿床位）
+                freeBedIfOccupied(activeDetails == null ? null : activeDetails.getBed_id());
+                freeBedIfOccupied(customer.getBed_id());
                 //3.逻辑删除客户（退住完成，不再出现在在住客户中；保留行以关联退住/入住历史）
                 customer.setIs_deleted(1);
                 customerMapper.updateById(customer);
                 log.info("退住审核通过，客户[{}]已退住", customer.getId());
             }
+        }
+    }
+
+    /** 床位仍被占用时释放为空闲（幂等） */
+    private void freeBedIfOccupied(Integer bedId) {
+        if (bedId == null) {
+            return;
+        }
+        Bed bed = bedMapper.selectById(bedId);
+        if (bed != null && bed.getBed_status() != null && bed.getBed_status() != FREE) {
+            bed.setBed_status(FREE);
+            bedMapper.updateById(bed);
+            log.info("释放床位[{}]", bedId);
         }
     }
 
@@ -139,8 +150,16 @@ public class BackdownServiceImpl extends ServiceImpl<BackdownMapper, Backdown>
         Page<Backdown> page = new Page<>(query.getPageNum(), query.getPageSize());
         LambdaQueryWrapper<Backdown> wrapper = new LambdaQueryWrapper<>();
 
-        // 根据当前登录管家ID筛选
-        wrapper.apply("customer_id IN (SELECT id FROM customer WHERE butler_id = {0})", userId);
+        // 根据当前登录管家ID筛选（customer.user_id 为管家分配字段，butler_id 为历史遗留列恒为空）
+        wrapper.apply("customer_id IN (SELECT id FROM customer WHERE user_id = {0})", userId);
+        if(query.getCustomerName()!=null&& !query.getCustomerName().isEmpty()){
+            wrapper.apply(
+                    "customer_id IN (SELECT id FROM customer WHERE customer_name LIKE {0})","%"+query.getCustomerName()+"%"
+            );
+        }
+        if(query.getCustomerId()!=null){
+            wrapper.eq(Backdown::getCustomer_id, query.getCustomerId());
+        }
         wrapper.orderByDesc(Backdown::getRetreattime);
 
         IPage<Backdown> doPage = this.page(page, wrapper);

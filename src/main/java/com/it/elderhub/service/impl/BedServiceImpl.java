@@ -142,12 +142,23 @@ public class BedServiceImpl extends ServiceImpl<BedMapper, Bed>
         } else if (query.getCustomerType() != null && query.getCustomerType() == 1) {
             wrapper.apply("customer_id NOT IN (SELECT customer_id FROM customer_nurse_item WHERE is_deleted = 0)");
         }
-        // 申请候选人过滤（applyType：1-退住申请 2-外出申请），仅保留床位实际占用的在住客户
+        // 申请候选人过滤（applyType：1-退住申请 2-外出申请）
         if (query.getApplyType() != null) {
-            wrapper.apply("bed_id IN (SELECT id FROM bed WHERE bed_status = 2)");
-            // 已有退住申请（待审核 0 / 已通过 1）的客户，不再出现在退住/外出申请的可选客户中；
-            // 已拒绝(2)的申请不算，允许重新申请
-            wrapper.apply("customer_id NOT IN (SELECT customer_id FROM backdown WHERE is_deleted = 0 AND audit_status IN (0, 1))");
+            if (query.getApplyType() == 1) {
+                // 退住申请候选人：床位占用中即可（在住/外出中均可退住），
+                // 排除已提交待审核退住申请的客户；已拒绝(2)的允许重新申请
+                wrapper.apply("bed_id IN (SELECT id FROM bed WHERE bed_status IN (2, 3))");
+                wrapper.apply("customer_id NOT IN (SELECT customer_id FROM backdown WHERE is_deleted = 0 AND audit_status = 0)");
+            } else if (query.getApplyType() == 2) {
+                // 外出申请候选人：仅限在住（外出中的不能重复外出），
+                // 排除已提交待审核或尚未回院的外出申请客户
+                wrapper.apply("bed_id IN (SELECT id FROM bed WHERE bed_status = 2)");
+                wrapper.apply("customer_id NOT IN (SELECT customer_id FROM outward WHERE is_deleted = 0 AND audit_status IN (0, 1) AND actual_return_time IS NULL)");
+            }
+        }
+        // 管家范围过滤：只返回该管家名下客户
+        if (query.getUserId() != null) {
+            wrapper.apply("customer_id IN (SELECT id FROM customer WHERE user_id = {0})", query.getUserId());
         }
         Date todayStart = startOfToday();
         if (query.getStatus() != null && query.getStatus() == 1) {
@@ -243,33 +254,91 @@ public class BedServiceImpl extends ServiceImpl<BedMapper, Bed>
                 .eq("is_deleted", 0)
                 .isNotNull("end_date")
                 .lt("end_date", todayStart));
-        if (expiredList == null || expiredList.isEmpty()) {
+        if (expiredList != null && !expiredList.isEmpty()) {
+            for (BedDetails details : expiredList) {
+                // 1.关闭生效的入住记录（退住时间=合同到期日，转为使用历史）
+                details.setIs_deleted(1);
+                bedDetailsMapper.updateById(details);
+
+                // 2.释放床位：以入住记录上的床位为准（客户档案缺失/已换床时同样兜底放床），避免漏放产生"孤儿床位"
+                releaseBedIfNoLiveDetails(details.getBed_id());
+
+                // 3.逻辑删除客户（合同到期视为自动退住，不再出现在在住客户列表）
+                Customer customer = details.getCustomer_id() == null ? null
+                        : customerMapper.selectById(details.getCustomer_id());
+                if (customer == null || (customer.getIs_deleted() != null && customer.getIs_deleted() == 1)) {
+                    continue;
+                }
+                customer.setIs_deleted(1);
+                customerMapper.updateById(customer);
+                // 客户档案仍挂着其他床位时一并兜底释放
+                if (customer.getBed_id() != null && !customer.getBed_id().equals(details.getBed_id())) {
+                    releaseBedIfNoLiveDetails(customer.getBed_id());
+                }
+            }
+            log.info("合同到期自动释放床位：共处理 {} 条", expiredList.size());
+        }
+        // 4.一致性自愈：无论是否存在到期记录，都清扫"占用/外出但没有在住客户"的孤儿床位
+        selfHealOrphanBeds();
+    }
+
+    /**
+     * 床位处于占用/外出且已无生效入住记录时释放为空闲（幂等）
+     */
+    private void releaseBedIfNoLiveDetails(Integer bedId) {
+        if (bedId == null) {
             return;
         }
-        for (BedDetails details : expiredList) {
-            // 1.关闭生效的入住记录（退住时间=合同到期日，转为使用历史）
-            details.setIs_deleted(1);
-            bedDetailsMapper.updateById(details);
+        Bed bed = this.getById(bedId);
+        if (bed == null || bed.getBed_status() == null || bed.getBed_status() == BED_STATUS_FREE) {
+            return;
+        }
+        Long liveCount = bedDetailsMapper.selectCount(new QueryWrapper<BedDetails>()
+                .eq("bed_id", bedId)
+                .eq("is_deleted", 0));
+        if (liveCount == null || liveCount == 0) {
+            bed.setBed_status(BED_STATUS_FREE);
+            this.updateById(bed);
+            log.info("释放无生效入住记录的床位[{}]", bedId);
+        }
+    }
 
-            Customer customer = details.getCustomer_id() == null ? null
-                    : customerMapper.selectById(details.getCustomer_id());
-            if (customer == null || customer.getBed_id() == null) {
-                continue;
-            }
-            // 2.仅当该床位仍属于该客户时才释放，避免误放已调换/复用的床位
-            if (details.getBed_id() != null && !details.getBed_id().equals(customer.getBed_id())) {
-                continue;
-            }
-            Bed bed = this.getById(customer.getBed_id());
-            if (bed != null && bed.getBed_status() != null && bed.getBed_status() != BED_STATUS_FREE) {
+    /**
+     * 床位一致性自愈：释放"占用/外出但没有在住客户"的孤儿床位。
+     * 兜底历史上退住/到期释放时漏放的床位，保证仪表盘统计（按床位状态）
+     * 与在住客户列表（按客户）口径一致。
+     */
+    private void selfHealOrphanBeds() {
+        List<Bed> busyBeds = this.list(new QueryWrapper<Bed>()
+                .in("bed_status", BED_STATUS_OCCUPIED, BED_STATUS_AWAY));
+        if (busyBeds == null || busyBeds.isEmpty()) {
+            return;
+        }
+        for (Bed bed : busyBeds) {
+            BedDetails live = bedDetailsMapper.selectOne(new QueryWrapper<BedDetails>()
+                    .eq("bed_id", bed.getId())
+                    .eq("is_deleted", 0)
+                    .orderByDesc("id")
+                    .last("LIMIT 1"));
+            if (live == null) {
+                // 床位上已无任何生效入住记录：直接释放
                 bed.setBed_status(BED_STATUS_FREE);
                 this.updateById(bed);
+                log.info("自愈释放孤儿床位[{}]", bed.getId());
+                continue;
             }
-            // 3.逻辑删除客户（合同到期视为自动退住，不再出现在在住客户列表）
-            customer.setIs_deleted(1);
-            customerMapper.updateById(customer);
+            Customer customer = live.getCustomer_id() == null ? null
+                    : customerMapper.selectById(live.getCustomer_id());
+            if (customer == null || (customer.getIs_deleted() != null && customer.getIs_deleted() == 1)) {
+                // 生效记录挂在已退住客户上：关闭记录并释放床位
+                live.setEnd_date(new Date());
+                live.setIs_deleted(1);
+                bedDetailsMapper.updateById(live);
+                bed.setBed_status(BED_STATUS_FREE);
+                this.updateById(bed);
+                log.info("自愈关闭已退住客户的入住记录[{}]并释放床位[{}]", live.getId(), bed.getId());
+            }
         }
-        log.info("合同到期自动释放床位：共处理 {} 条", expiredList.size());
     }
 
     /**

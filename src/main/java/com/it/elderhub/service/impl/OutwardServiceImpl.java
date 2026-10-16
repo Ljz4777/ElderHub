@@ -48,7 +48,10 @@ public class OutwardServiceImpl extends ServiceImpl<OutwardMapper, Outward> impl
         LambdaQueryWrapper<Outward> wrapper = new LambdaQueryWrapper<>();
 
         if (query.getCustomerName() != null && !query.getCustomerName().isEmpty()) {
-            wrapper.apply("customer_id IN (SELECT id FROM customer WHERE name LIKE {0})", "%" + query.getCustomerName() + "%");
+            wrapper.apply("customer_id IN (SELECT id FROM customer WHERE customer_name LIKE {0})", "%" + query.getCustomerName() + "%");
+        }
+        if (query.getCustomerId() != null) {
+            wrapper.eq(Outward::getCustomer_id, query.getCustomerId());
         }
         wrapper.orderByDesc(Outward::getOutgoingtime);
         return convertToPageResult(this.page(page, wrapper));
@@ -111,7 +114,14 @@ public class OutwardServiceImpl extends ServiceImpl<OutwardMapper, Outward> impl
     public PageResult<OutwardVO> listNurseOutwards(OutwardQuery query, Integer userId) {
         Page<Outward> page = new Page<>(query.getPageNum(), query.getPageSize());
         LambdaQueryWrapper<Outward> wrapper = new LambdaQueryWrapper<>();
-        wrapper.apply("customer_id IN (SELECT id FROM customer WHERE butler_id = {0})", userId);
+        // customer.user_id 为管家分配字段（butler_id 为历史遗留列，恒为空，不可用）
+        wrapper.apply("customer_id IN (SELECT id FROM customer WHERE user_id = {0})", userId);
+        if (query.getCustomerName() != null && !query.getCustomerName().isEmpty()) {
+            wrapper.apply("customer_id IN (SELECT id FROM customer WHERE customer_name LIKE {0})", "%" + query.getCustomerName() + "%");
+        }
+        if (query.getCustomerId() != null) {
+            wrapper.eq(Outward::getCustomer_id, query.getCustomerId());
+        }
         wrapper.orderByDesc(Outward::getOutgoingtime);
         return convertToPageResult(this.page(page, wrapper));
     }
